@@ -1,14 +1,5 @@
 # Work Distribution Plan - Multi-Subject Scheduler Chatbot
 
-## Team Members
-
-1. **Q** - Team Leader (Expert level, all-around skills)
-2. **M** - Grammar Specialist (Strong logic, ANTLR4 expert)
-3. **D** - Full-stack Developer (Good level, AI-assisted)
-4. **K** - Junior Developer (Average level)
-
----
-
 ## Project Timeline: 3 Weeks
 
 ### Week 1: Foundation & Core Models

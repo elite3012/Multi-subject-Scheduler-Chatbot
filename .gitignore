@@ -1,0 +1,16 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.class
+*.jar
+*.war
+*.ear
+.settings/
+.classpath
+.project
+bin/
+out/
+*.log
+antlr4-*.jar

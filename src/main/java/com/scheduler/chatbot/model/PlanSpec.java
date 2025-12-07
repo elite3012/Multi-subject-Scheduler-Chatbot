@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * Represents the complete planning specification before scheduling
  */
 public class PlanSpec {
-    
+
     private String planName;
     private ZoneId timezone;
     private LocalDate startDate;
@@ -22,7 +22,14 @@ public class PlanSpec {
     private Map<LocalDate, Double> availability; // date -> capacity hours
     private SchedulingRules rules;
     private SoftPreferences softPrefs;
-    
+
+    // Command metadata fields (for DSL parser)
+    private String commandType;
+    private String targetSubject;
+    private String targetSchedulePath;
+    private Integer updateHours;
+    private Priority updatePriority;
+
     public PlanSpec() {
         this.planName = "Untitled Plan";
         this.timezone = ZoneId.systemDefault();
@@ -32,113 +39,153 @@ public class PlanSpec {
         this.rules = new SchedulingRules();
         this.softPrefs = new SoftPreferences();
     }
-    
+
     public PlanSpec(String planName) {
         this();
         this.planName = planName;
     }
-    
+
     // Getters and Setters
-    
+
     public String getPlanName() {
         return planName;
     }
-    
+
     public void setPlanName(String planName) {
         this.planName = planName;
     }
-    
+
     public ZoneId getTimezone() {
         return timezone;
     }
-    
+
     public void setTimezone(ZoneId timezone) {
         this.timezone = timezone;
     }
-    
+
     public LocalDate getStartDate() {
         return startDate;
     }
-    
+
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
-    
+
     public LocalDate getEndDate() {
         return endDate;
     }
-    
+
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
-    
+
     public List<CourseSpec> getCourses() {
         return courses;
     }
-    
+
     public void setCourses(List<CourseSpec> courses) {
         this.courses = courses;
     }
-    
+
     public void addCourse(CourseSpec course) {
         this.courses.add(course);
     }
-    
+
     public void removeCourse(String courseId) {
         this.courses.removeIf(c -> c.getId().equals(courseId));
     }
-    
+
     public CourseSpec getCourse(String courseId) {
         return courses.stream()
                 .filter(c -> c.getId().equals(courseId))
                 .findFirst()
                 .orElse(null);
     }
-    
+
     public Map<LocalDate, Double> getAvailability() {
         return availability;
     }
-    
+
     public void setAvailability(Map<LocalDate, Double> availability) {
         this.availability = availability;
     }
-    
+
     public void setAvailability(LocalDate date, double hours) {
         this.availability.put(date, hours);
     }
-    
+
     public Double getAvailability(LocalDate date) {
         return availability.getOrDefault(date, 0.0);
     }
-    
+
     public SchedulingRules getRules() {
         return rules;
     }
-    
+
     public void setRules(SchedulingRules rules) {
         this.rules = rules;
     }
-    
+
     public SoftPreferences getSoftPrefs() {
         return softPrefs;
     }
-    
+
     public void setSoftPrefs(SoftPreferences softPrefs) {
         this.softPrefs = softPrefs;
     }
-    
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getTargetSubject() {
+        return targetSubject;
+    }
+
+    public void setTargetSubject(String targetSubject) {
+        this.targetSubject = targetSubject;
+    }
+
+    public String getTargetSchedulePath() {
+        return targetSchedulePath;
+    }
+
+    public void setTargetSchedulePath(String targetSchedulePath) {
+        this.targetSchedulePath = targetSchedulePath;
+    }
+
+    public Integer getUpdateHours() {
+        return updateHours;
+    }
+
+    public void setUpdateHours(Integer updateHours) {
+        this.updateHours = updateHours;
+    }
+
+    public Priority getUpdatePriority() {
+        return updatePriority;
+    }
+
+    public void setUpdatePriority(Priority updatePriority) {
+        this.updatePriority = updatePriority;
+    }
+
     /**
      * Validate the plan specification
      * Performs comprehensive semantic validation
      */
     public ValidationResult validate() {
         List<String> errors = new ArrayList<>();
-        
+
         // 1. Validate plan name
         if (planName == null || planName.trim().isEmpty()) {
             errors.add("Plan name cannot be empty");
         }
-        
+
         // 2. Validate courses
         if (courses == null || courses.isEmpty()) {
             errors.add("At least one course must be specified");
@@ -147,12 +194,12 @@ public class PlanSpec {
             List<String> courseIds = courses.stream()
                     .map(CourseSpec::getId)
                     .collect(Collectors.toList());
-            
+
             long uniqueIds = courseIds.stream().distinct().count();
             if (uniqueIds < courseIds.size()) {
                 errors.add("Duplicate course IDs found");
             }
-            
+
             // Validate each course
             for (int i = 0; i < courses.size(); i++) {
                 CourseSpec course = courses.get(i);
@@ -162,7 +209,7 @@ public class PlanSpec {
                 }
             }
         }
-        
+
         // 3. Validate availability
         if (availability == null || availability.isEmpty()) {
             errors.add("No availability specified");
@@ -173,11 +220,11 @@ public class PlanSpec {
                     errors.add("Negative availability hours on " + entry.getKey());
                 }
                 if (entry.getValue() > rules.getMaxHoursPerDay()) {
-                    errors.add("Availability on " + entry.getKey() + 
+                    errors.add("Availability on " + entry.getKey() +
                             " exceeds max hours per day (" + rules.getMaxHoursPerDay() + ")");
                 }
             }
-            
+
             // Determine date range from availability
             LocalDate minDate = availability.keySet().stream()
                     .min(LocalDate::compareTo)
@@ -185,7 +232,7 @@ public class PlanSpec {
             LocalDate maxDate = availability.keySet().stream()
                     .max(LocalDate::compareTo)
                     .orElse(null);
-            
+
             if (minDate != null && maxDate != null) {
                 if (startDate == null) {
                     startDate = minDate;
@@ -195,80 +242,79 @@ public class PlanSpec {
                 }
             }
         }
-        
+
         // 4. Validate date range
         if (startDate != null && endDate != null) {
             if (startDate.isAfter(endDate)) {
                 errors.add("Start date (" + startDate + ") is after end date (" + endDate + ")");
             }
         }
-        
+
         // 5. Validate workload vs availability
         double totalWorkload = courses.stream()
                 .mapToDouble(CourseSpec::getWorkloadHours)
                 .sum();
-        
+
         double totalAvailable = availability.values().stream()
                 .mapToDouble(Double::doubleValue)
                 .sum();
-        
+
         if (totalWorkload > totalAvailable) {
             errors.add(String.format(
                     "Total workload (%.1f hours) exceeds total availability (%.1f hours). " +
-                    "Shortfall: %.1f hours",
-                    totalWorkload, totalAvailable, totalWorkload - totalAvailable
-            ));
+                            "Shortfall: %.1f hours",
+                    totalWorkload, totalAvailable, totalWorkload - totalAvailable));
         }
-        
+
         // 6. Validate scheduling rules
         if (rules.getMaxHoursPerDay() <= 0) {
             errors.add("Max hours per day must be positive");
         }
-        
+
         if (rules.getBlockDurationMinutes() <= 0) {
             errors.add("Block duration must be positive");
         }
-        
+
         if (rules.getBreakDurationMinutes() < 0) {
             errors.add("Break duration cannot be negative");
         }
-        
+
         if (rules.getMaxContinuousBlockMinutes() < rules.getBlockDurationMinutes()) {
             errors.add("Max continuous block must be at least one block duration");
         }
-        
+
         return new ValidationResult(errors.isEmpty(), errors);
     }
-    
+
     /**
      * Validate a single course specification
      */
     private List<String> validateCourse(CourseSpec course) {
         List<String> errors = new ArrayList<>();
-        
+
         if (course.getId() == null || course.getId().trim().isEmpty()) {
             errors.add("Course ID cannot be empty");
         }
-        
+
         if (course.getPriority() == null) {
             errors.add("Priority must be specified");
         }
-        
+
         if (course.getWorkloadHours() <= 0) {
             errors.add("Workload hours must be positive");
         }
-        
+
         // Validate components
         if (course.getComponents() != null && !course.getComponents().isEmpty()) {
             double componentHours = course.getComponents().stream()
                     .mapToDouble(ComponentSpec::getEstimatedHours)
                     .sum();
-            
+
             // Component hours should not exceed total workload significantly
             if (componentHours > course.getWorkloadHours() * 1.1) {
                 errors.add("Component hours exceed total workload");
             }
-            
+
             // Validate each component
             for (ComponentSpec comp : course.getComponents()) {
                 if (comp.getName() == null || comp.getName().trim().isEmpty()) {
@@ -282,7 +328,7 @@ public class PlanSpec {
                 }
             }
         }
-        
+
         // Validate exam date
         if (course.getExamDate() != null) {
             if (startDate != null && course.getExamDate().isBefore(startDate)) {
@@ -292,10 +338,10 @@ public class PlanSpec {
                 errors.add("Exam date is after plan end date");
             }
         }
-        
+
         return errors;
     }
-    
+
     /**
      * Calculate total workload across all courses
      */
@@ -304,7 +350,7 @@ public class PlanSpec {
                 .mapToDouble(CourseSpec::getWorkloadHours)
                 .sum();
     }
-    
+
     /**
      * Calculate total available hours
      */
@@ -313,7 +359,7 @@ public class PlanSpec {
                 .mapToDouble(Double::doubleValue)
                 .sum();
     }
-    
+
     /**
      * Get all dates with availability in chronological order
      */
@@ -322,14 +368,14 @@ public class PlanSpec {
                 .sorted()
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Check if there is capacity shortfall
      */
     public boolean hasShortfall() {
         return getTotalWorkloadHours() > getTotalAvailableHours();
     }
-    
+
     /**
      * Get shortfall amount in hours
      */
@@ -337,7 +383,7 @@ public class PlanSpec {
         double shortfall = getTotalWorkloadHours() - getTotalAvailableHours();
         return Math.max(0, shortfall);
     }
-    
+
     /**
      * Course specification within a plan
      */
@@ -347,68 +393,68 @@ public class PlanSpec {
         private double workloadHours;
         private LocalDate examDate;
         private List<ComponentSpec> components;
-        
+
         public CourseSpec() {
             this.components = new ArrayList<>();
         }
-        
+
         public CourseSpec(String id, Priority priority, double workloadHours) {
             this();
             this.id = id;
             this.priority = priority;
             this.workloadHours = workloadHours;
         }
-        
+
         // Getters and Setters
-        
+
         public String getId() {
             return id;
         }
-        
+
         public void setId(String id) {
             this.id = id;
         }
-        
+
         public Priority getPriority() {
             return priority;
         }
-        
+
         public void setPriority(Priority priority) {
             this.priority = priority;
         }
-        
+
         public double getWorkloadHours() {
             return workloadHours;
         }
-        
+
         public void setWorkloadHours(double workloadHours) {
             this.workloadHours = workloadHours;
         }
-        
+
         public LocalDate getExamDate() {
             return examDate;
         }
-        
+
         public void setExamDate(LocalDate examDate) {
             this.examDate = examDate;
         }
-        
+
         public List<ComponentSpec> getComponents() {
             return components;
         }
-        
+
         public void setComponents(List<ComponentSpec> components) {
             this.components = components;
         }
-        
+
         public void addComponent(ComponentSpec component) {
             this.components.add(component);
         }
-        
+
         public void addComponent(String name, double hours, LocalDate dueDate) {
             this.components.add(new ComponentSpec(name, hours, dueDate));
         }
-        
+
         /**
          * Get total hours from all components
          */
@@ -418,7 +464,7 @@ public class PlanSpec {
                     .sum();
         }
     }
-    
+
     /**
      * Component specification (assignment, project, etc.)
      */
@@ -426,43 +472,43 @@ public class PlanSpec {
         private String name;
         private double estimatedHours;
         private LocalDate dueDate;
-        
+
         public ComponentSpec() {
         }
-        
+
         public ComponentSpec(String name, double estimatedHours, LocalDate dueDate) {
             this.name = name;
             this.estimatedHours = estimatedHours;
             this.dueDate = dueDate;
         }
-        
+
         // Getters and Setters
-        
+
         public String getName() {
             return name;
         }
-        
+
         public void setName(String name) {
             this.name = name;
         }
-        
+
         public double getEstimatedHours() {
             return estimatedHours;
         }
-        
+
         public void setEstimatedHours(double estimatedHours) {
             this.estimatedHours = estimatedHours;
         }
-        
+
         public LocalDate getDueDate() {
             return dueDate;
         }
-        
+
         public void setDueDate(LocalDate dueDate) {
             this.dueDate = dueDate;
         }
     }
-    
+
     /**
      * Scheduling rules and constraints
      */
@@ -471,66 +517,66 @@ public class PlanSpec {
         private int maxContinuousBlockMinutes = 180; // 3 hours
         private int blockDurationMinutes = 90;
         private int breakDurationMinutes = 15;
-        
+
         public SchedulingRules() {
         }
-        
+
         public SchedulingRules(double maxHoursPerDay, int maxContinuousBlockMinutes,
-                              int blockDurationMinutes, int breakDurationMinutes) {
+                int blockDurationMinutes, int breakDurationMinutes) {
             this.maxHoursPerDay = maxHoursPerDay;
             this.maxContinuousBlockMinutes = maxContinuousBlockMinutes;
             this.blockDurationMinutes = blockDurationMinutes;
             this.breakDurationMinutes = breakDurationMinutes;
         }
-        
+
         // Getters and Setters
-        
+
         public double getMaxHoursPerDay() {
             return maxHoursPerDay;
         }
-        
+
         public void setMaxHoursPerDay(double maxHoursPerDay) {
             this.maxHoursPerDay = maxHoursPerDay;
         }
-        
+
         public int getMaxContinuousBlockMinutes() {
             return maxContinuousBlockMinutes;
         }
-        
+
         public void setMaxContinuousBlockMinutes(int maxContinuousBlockMinutes) {
             this.maxContinuousBlockMinutes = maxContinuousBlockMinutes;
         }
-        
+
         public int getBlockDurationMinutes() {
             return blockDurationMinutes;
         }
-        
+
         public void setBlockDurationMinutes(int blockDurationMinutes) {
             this.blockDurationMinutes = blockDurationMinutes;
         }
-        
+
         public int getBreakDurationMinutes() {
             return breakDurationMinutes;
         }
-        
+
         public void setBreakDurationMinutes(int breakDurationMinutes) {
             this.breakDurationMinutes = breakDurationMinutes;
         }
-        
+
         /**
          * Get block duration in hours
          */
         public double getBlockDurationHours() {
             return blockDurationMinutes / 60.0;
         }
-        
+
         /**
          * Get break duration in hours
          */
         public double getBreakDurationHours() {
             return breakDurationMinutes / 60.0;
         }
-        
+
         /**
          * Calculate maximum blocks per day
          */
@@ -539,7 +585,7 @@ public class PlanSpec {
             return (int) ((maxHoursPerDay * 60) / totalMinutesPerBlock);
         }
     }
-    
+
     /**
      * Soft preferences for optimization
      */
@@ -550,83 +596,83 @@ public class PlanSpec {
         private double spreadnessWeight = 1.0;
         private double bufferWeight = 1.0;
         private double interleaveWeight = 1.0;
-        
+
         public SoftPreferences() {
         }
-        
+
         public SoftPreferences(boolean preferSpreadness, boolean preferBuffer, boolean preferInterleave) {
             this.preferSpreadness = preferSpreadness;
             this.preferBuffer = preferBuffer;
             this.preferInterleave = preferInterleave;
         }
-        
+
         // Getters and Setters
-        
+
         public boolean isPreferSpreadness() {
             return preferSpreadness;
         }
-        
+
         public void setPreferSpreadness(boolean preferSpreadness) {
             this.preferSpreadness = preferSpreadness;
         }
-        
+
         public boolean isPreferBuffer() {
             return preferBuffer;
         }
-        
+
         public void setPreferBuffer(boolean preferBuffer) {
             this.preferBuffer = preferBuffer;
         }
-        
+
         public boolean isPreferInterleave() {
             return preferInterleave;
         }
-        
+
         public void setPreferInterleave(boolean preferInterleave) {
             this.preferInterleave = preferInterleave;
         }
-        
+
         public double getSpreadnessWeight() {
             return spreadnessWeight;
         }
-        
+
         public void setSpreadnessWeight(double spreadnessWeight) {
             this.spreadnessWeight = spreadnessWeight;
         }
-        
+
         public double getBufferWeight() {
             return bufferWeight;
         }
-        
+
         public void setBufferWeight(double bufferWeight) {
             this.bufferWeight = bufferWeight;
         }
-        
+
         public double getInterleaveWeight() {
             return interleaveWeight;
         }
-        
+
         public void setInterleaveWeight(double interleaveWeight) {
             this.interleaveWeight = interleaveWeight;
         }
     }
-    
+
     /**
      * Validation result
      */
     public static class ValidationResult {
         private boolean valid;
         private List<String> errors;
-        
+
         public ValidationResult(boolean valid, List<String> errors) {
             this.valid = valid;
             this.errors = errors;
         }
-        
+
         public boolean isValid() {
             return valid;
         }
-        
+
         public List<String> getErrors() {
             return errors;
         }

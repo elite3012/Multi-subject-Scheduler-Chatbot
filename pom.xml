@@ -45,6 +45,12 @@
             <version>${antlr4.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>${antlr4.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Lombok for reducing boilerplate -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -82,7 +88,7 @@
                 <version>${antlr4.version}</version>
                 <configuration>
                     <sourceDirectory>${project.basedir}/grammar</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/antlr4/com/scheduler/chatbot/parser</outputDirectory>
                     <visitor>true</visitor>
                     <listener>true</listener>
                 </configuration>

@@ -15,6 +15,13 @@ statement
     | generateScheduleStatement
     | showScheduleStatement
     | clearStatement
+    | deleteSubjectStatement 
+    | listSubjectsStatement 
+    | listAvailabilityStatement 
+    | updateSubjectStatement 
+    | updatePriorityStatement 
+    | showHistoryStatement
+    | loadScheduleStatement 
     ;
 
 addSubjectStatement
@@ -35,6 +42,34 @@ showScheduleStatement
 
 clearStatement
     : 'clear' ('all' | 'subjects' | 'schedule')
+    ;
+
+deleteSubjectStatement 
+    : 'delete' 'subject' STRING 
+    ;
+
+listSubjectsStatement 
+    : 'list' 'subjects' 
+    ;
+
+listAvailabilityStatement 
+    : 'list' 'availability' 
+    ;
+
+updateSubjectStatement 
+    : 'update' 'subject' STRING 'hours' NUMBER 
+    ;
+
+updatePriorityStatement 
+    : 'update' 'subject' STRING 'priority' PRIORITY 
+    ;
+
+showHistoryStatement 
+    : 'show' 'history' 
+    ;
+
+loadScheduleStatement 
+    : 'load' 'schedule' STRING 
     ;
 
 // Lexer Rules

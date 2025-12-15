@@ -19,19 +19,19 @@ import java.util.List;
  */
 @Service
 public class SchedulerFacade {
-    
+
     @Autowired
     private DSLParser dslParser;
-    
+
     @Autowired
     private SchedulerService schedulerService;
-    
+
     @Autowired
     private ScheduleRepository repository;
-    
+
     private PlanSpec currentPlan;
     private Schedule currentSchedule;
-    
+
     /**
      * Execute a DSL command and update the current plan
      * TODO: Implement command execution flow
@@ -39,21 +39,24 @@ public class SchedulerFacade {
     public CommandResult executeCommand(String dslCommand) {
         try {
             // Step 1: Parse DSL → PlanSpec
-            // TODO: PlanSpec updatedPlan = dslParser.parseCommand(dslCommand);
-            
+            PlanSpec updatedPlan = dslParser.parseCommand(dslCommand);
+
             // Step 2: Validate PlanSpec
-            // TODO: PlanSpec.ValidationResult validation = updatedPlan.validate();
-            // if (!validation.isValid()) return error
-            
+            PlanSpec.ValidationResult validation = updatedPlan.validate();
+
+            if (!validation.isValid()) {
+                return new CommandResult(false, "Error: " + validation.getErrors(), null);
+            }
+
             // Step 3: Update current plan
-            // TODO: this.currentPlan = updatedPlan;
-            
+            this.currentPlan = updatedPlan;
+
             return new CommandResult(true, "Command executed successfully", null);
         } catch (Exception e) {
             return new CommandResult(false, "Error: " + e.getMessage(), null);
         }
     }
-    
+
     /**
      * Generate schedule from current plan
      * Auto-saves schedule to JSON file for persistence
@@ -64,21 +67,19 @@ public class SchedulerFacade {
             if (currentPlan == null) {
                 return new ScheduleResult(false, "No plan specified", null);
             }
-            
-            // TODO: Validate plan
-            // TODO: Schedule schedule = schedulerService.generateSchedule(currentPlan);
-            // TODO: this.currentSchedule = schedule;
-            
+
+            // Validate plan
+            Schedule schedule = schedulerService.generateSchedule(currentPlan);
+            this.currentSchedule = schedule;
+
             // Auto-save schedule to file
-            // TODO: String filepath = repository.saveSchedule(schedule);
-            // TODO: return new ScheduleResult(true, "Schedule generated and saved to: " + filepath, schedule);
-            
-            return new ScheduleResult(true, "Schedule generated", null);
+            String filepath = repository.saveSchedule(schedule);
+            return new ScheduleResult(true, "Schedule generated and saved to: " + filepath, schedule);
         } catch (Exception e) {
             return new ScheduleResult(false, "Error: " + e.getMessage(), null);
         }
     }
-    
+
     /**
      * Get current schedule summary
      * TODO: Implement
@@ -87,10 +88,9 @@ public class SchedulerFacade {
         if (currentSchedule == null) {
             return "No schedule generated yet.";
         }
-        // TODO: return schedulerService.formatSchedule(currentSchedule);
-        return "Schedule summary not implemented";
+        return schedulerService.formatSchedule(currentSchedule);
     }
-    
+
     /**
      * Clear current plan and schedule
      */
@@ -98,7 +98,7 @@ public class SchedulerFacade {
         this.currentPlan = null;
         this.currentSchedule = null;
     }
-    
+
     /**
      * List all saved schedules (newest first)
      */
@@ -109,7 +109,7 @@ public class SchedulerFacade {
             throw new RuntimeException("Failed to list schedules: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Load a saved schedule from file
      */
@@ -122,7 +122,7 @@ public class SchedulerFacade {
             return new LoadResult(false, "Failed to load schedule: " + e.getMessage(), null);
         }
     }
-    
+
     /**
      * Load the most recent schedule automatically
      * Useful for app startup to restore last session
@@ -139,62 +139,91 @@ public class SchedulerFacade {
             return new LoadResult(false, "Failed to load latest schedule: " + e.getMessage(), null);
         }
     }
-    
+
     /**
      * Delete a saved schedule
      */
     public boolean deleteSchedule(String filepath) {
-        return repository.deleteSchedule(filepath);
+        try {
+            return repository.deleteSchedule(filepath);
+        } catch (Exception e) {
+            System.err.println("Failed to delete the schedule: " + e.getMessage());
+            return false;
+        }
     }
-    
+
     // Result DTOs
-    
+
     public static class CommandResult {
         private boolean success;
         private String message;
         private PlanSpec updatedPlan;
-        
+
         public CommandResult(boolean success, String message, PlanSpec updatedPlan) {
             this.success = success;
             this.message = message;
             this.updatedPlan = updatedPlan;
         }
-        
+
         // TODO: Add getters
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public PlanSpec getUpdatedPlan() { return updatedPlan; }
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public PlanSpec getUpdatedPlan() {
+            return updatedPlan;
+        }
     }
-    
+
     public static class ScheduleResult {
         private boolean success;
         private String message;
         private Schedule schedule;
-        
+
         public ScheduleResult(boolean success, String message, Schedule schedule) {
             this.success = success;
             this.message = message;
             this.schedule = schedule;
         }
-        
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public Schedule getSchedule() { return schedule; }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Schedule getSchedule() {
+            return schedule;
+        }
     }
-    
+
     public static class LoadResult {
         private boolean success;
         private String message;
         private Schedule schedule;
-        
+
         public LoadResult(boolean success, String message, Schedule schedule) {
             this.success = success;
             this.message = message;
             this.schedule = schedule;
         }
-        
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public Schedule getSchedule() { return schedule; }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Schedule getSchedule() {
+            return schedule;
+        }
     }
 }

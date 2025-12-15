@@ -1,7 +1,7 @@
 grammar SchedulerDSL;
 
 @header {
-    package com.scheduler.chatbot.parser;
+package com.scheduler.chatbot.parser;
 }
 
 // Parser Rules

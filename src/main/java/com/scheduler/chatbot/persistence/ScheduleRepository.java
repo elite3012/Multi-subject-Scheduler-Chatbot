@@ -56,7 +56,7 @@ public class ScheduleRepository {
      * Filename: plan_YYYYMMDD_HHmmss.json
      */
     public String savePlan(PlanSpec plan) throws IOException {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
         String filename = "plan_" + timestamp + ".json";
         Path filepath = Paths.get(PLANS_DIR, filename);
         
@@ -69,7 +69,7 @@ public class ScheduleRepository {
      * Filename: schedule_YYYYMMDD_HHmmss.json
      */
     public String saveSchedule(Schedule schedule) throws IOException {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
         String filename = "schedule_" + timestamp + ".json";
         Path filepath = Paths.get(SCHEDULES_DIR, filename);
         

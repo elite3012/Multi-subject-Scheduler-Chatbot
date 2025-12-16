@@ -43,22 +43,22 @@ public class ScheduleRepositoryTest {
         Files.writeString(plansDir.resolve("plan_20250102_000000_2.json"),
                 "{\"planName\":\"B\"}");
 
-        List<ScheduleRepository.ScheduleFile> plans = repo.listPlans();
+        List<ScheduleRepository.ScheduleFile> plans = repo.listSchedules();
         assertEquals(2, plans.size());
 
-        assertTrue(repo.deletePlan(plans.get(0).getPath()));
-        assertEquals(1, repo.listPlans().size());
+        assertTrue(repo.deleteSchedule(plans.get(0).getPath()));
+        assertEquals(1, repo.listSchedules().size());
     }
 
     @Test
-    public void testSavePlanCreatesFile() throws Exception {
+    public void testSaveScheduleCreatesFile() throws Exception {
         ScheduleRepository repo = new ScheduleRepository();
 
-        PlanSpec plan = new PlanSpec();
-        plan.setPlanName("test-plan");
+        Schedule schedule = new Schedule();
+        schedule.setPlanName("test-plan");
 
-        String path = repo.savePlan(plan);
-        assertTrue(Files.exists(Path.of(path)));
+        String path = repo.saveSchedule(schedule);
+        assertTrue(Files.exists(Path.of(path)), "Saved schedule file should exist at returned path");
     }
 
     @Test

@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Facade Service that orchestrates the complete flow:
@@ -34,22 +36,37 @@ public class SchedulerFacade {
 
     /**
      * Execute a DSL command and update the current plan
-     * TODO: Implement command execution flow
+     * Merges new data from command into existing plan state
      */
     public CommandResult executeCommand(String dslCommand) {
         try {
-            // Step 1: Parse DSL → PlanSpec
-            PlanSpec updatedPlan = dslParser.parseCommand(dslCommand);
+            // Step 1: Parse DSL → PlanSpec (contains only data from this command)
+            PlanSpec parsedPlan = dslParser.parseCommand(dslCommand);
 
-            // Step 2: Validate PlanSpec
-            PlanSpec.ValidationResult validation = updatedPlan.validate();
-
-            if (!validation.isValid()) {
-                return new CommandResult(false, "Error: " + validation.getErrors(), null);
+            // Step 2: Initialize currentPlan if null
+            if (this.currentPlan == null) {
+                this.currentPlan = new PlanSpec();
             }
 
-            // Step 3: Update current plan
-            this.currentPlan = updatedPlan;
+            // Step 3: Merge parsed data into current plan based on command type
+            String commandType = parsedPlan.getCommandType();
+            
+            if ("ADD_SUBJECT".equals(commandType)) {
+                // Add all subjects from parsed plan
+                for (PlanSpec.CourseSpec course : parsedPlan.getCourses()) {
+                    this.currentPlan.addCourse(course);
+                }
+            } else if ("SET_AVAILABILITY".equals(commandType)) {
+                // Add all availability from parsed plan
+                for (Map.Entry<LocalDate, Double> entry : parsedPlan.getAvailability().entrySet()) {
+                    this.currentPlan.setAvailability(entry.getKey(), entry.getValue());
+                }
+            } else if ("CLEAR".equals(commandType)) {
+                this.currentPlan = new PlanSpec();
+            } else {
+                // For other commands (generate, show, list, etc.), use the parsed plan
+                this.currentPlan = parsedPlan;
+            }
 
             return new CommandResult(true, "Command executed successfully", null);
         } catch (Exception e) {

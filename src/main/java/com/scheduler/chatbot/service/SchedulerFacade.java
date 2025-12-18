@@ -8,7 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Facade Service that orchestrates the complete flow:
@@ -31,29 +36,58 @@ public class SchedulerFacade {
 
     private PlanSpec currentPlan;
     private Schedule currentSchedule;
+    private List<CommandHistoryEntry> commandHistory = new ArrayList<>();
 
     /**
      * Execute a DSL command and update the current plan
-     * TODO: Implement command execution flow
+     * Merges new data from command into existing plan state
      */
     public CommandResult executeCommand(String dslCommand) {
         try {
-            // Step 1: Parse DSL → PlanSpec
-            PlanSpec updatedPlan = dslParser.parseCommand(dslCommand);
-
-            // Step 2: Validate PlanSpec
-            PlanSpec.ValidationResult validation = updatedPlan.validate();
-
-            if (!validation.isValid()) {
-                return new CommandResult(false, "Error: " + validation.getErrors(), null);
+            // Step 1: Parse DSL → PlanSpec (contains only data from this command)
+            PlanSpec parsedPlan = dslParser.parseCommand(dslCommand);
+            
+            // Step 1.5: Save command to history (except for SHOW_HISTORY itself)
+            String commandType = parsedPlan.getCommandType();
+            if (!"SHOW_HISTORY".equals(commandType)) {
+                commandHistory.add(new CommandHistoryEntry(
+                    LocalDateTime.now(),
+                    dslCommand,
+                    commandType
+                ));
             }
 
-            // Step 3: Update current plan
-            this.currentPlan = updatedPlan;
+            // Step 2: Initialize currentPlan if null
+            if (this.currentPlan == null) {
+                this.currentPlan = new PlanSpec();
+            }
 
-            return new CommandResult(true, "Command executed successfully", null);
+            // Step 3: Handle SHOW_HISTORY - return command history
+            if ("SHOW_HISTORY".equals(commandType)) {
+                return new CommandResult(true, "Command history retrieved", null, commandHistory);
+            }
+            
+            // Step 4: Merge parsed data into current plan based on command type
+            if ("ADD_SUBJECT".equals(commandType)) {
+                // Add all subjects from parsed plan
+                for (PlanSpec.CourseSpec course : parsedPlan.getCourses()) {
+                    this.currentPlan.addCourse(course);
+                }
+            } else if ("SET_AVAILABILITY".equals(commandType)) {
+                // Add all availability from parsed plan
+                for (Map.Entry<LocalDate, Double> entry : parsedPlan.getAvailability().entrySet()) {
+                    this.currentPlan.setAvailability(entry.getKey(), entry.getValue());
+                }
+            } else if ("CLEAR".equals(commandType)) {
+                this.currentPlan = new PlanSpec();
+            } else {
+                // For other commands (generate, show, list, etc.), use the parsed plan
+                this.currentPlan = parsedPlan;
+            }
+
+            return new CommandResult(true, "Command executed successfully", null, null);
         } catch (Exception e) {
-            return new CommandResult(false, "Error: " + e.getMessage(), null);
+            return new CommandResult(false, "Error: " + e.getMessage(), null, null);
         }
     }
 
@@ -97,6 +131,7 @@ public class SchedulerFacade {
     public void clear() {
         this.currentPlan = null;
         this.currentSchedule = null;
+        this.commandHistory.clear();
     }
 
     /**
@@ -158,11 +193,13 @@ public class SchedulerFacade {
         private boolean success;
         private String message;
         private PlanSpec updatedPlan;
+        private List<CommandHistoryEntry> commandHistory;
 
-        public CommandResult(boolean success, String message, PlanSpec updatedPlan) {
+        public CommandResult(boolean success, String message, PlanSpec updatedPlan, List<CommandHistoryEntry> commandHistory) {
             this.success = success;
             this.message = message;
             this.updatedPlan = updatedPlan;
+            this.commandHistory = commandHistory;
         }
 
         // TODO: Add getters
@@ -176,6 +213,57 @@ public class SchedulerFacade {
 
         public PlanSpec getUpdatedPlan() {
             return updatedPlan;
+        }
+
+        public List<CommandHistoryEntry> getCommandHistory() {
+            return commandHistory;
+        }
+
+        public void setCommandHistory(List<CommandHistoryEntry> commandHistory) {
+            this.commandHistory = commandHistory;
+        }
+    }
+
+    /**
+     * Represents a single command in the history
+     */
+    public static class CommandHistoryEntry {
+        private LocalDateTime timestamp;
+        private String command;
+        private String commandType;
+
+        public CommandHistoryEntry(LocalDateTime timestamp, String command, String commandType) {
+            this.timestamp = timestamp;
+            this.command = command;
+            this.commandType = commandType;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(LocalDateTime timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public String getCommand() {
+            return command;
+        }
+
+        public void setCommand(String command) {
+            this.command = command;
+        }
+
+        public String getCommandType() {
+            return commandType;
+        }
+
+        public void setCommandType(String commandType) {
+            this.commandType = commandType;
+        }
+
+        public String getFormattedTimestamp() {
+            return timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         }
     }
 

@@ -31,38 +31,46 @@ public class ScheduleRepositoryTest {
     }
 
     @Test
-    public void testListAndDeletePlans() throws Exception {
+    public void testListAndDeleteSchedules() throws Exception {
         ScheduleRepository repo = new ScheduleRepository();
 
-        Path plansDir = Path.of(System.getProperty("user.home"),
-                ".scheduler-chatbot", "plans");
-        Files.createDirectories(plansDir);
+        Path scheduleDir = Path.of(System.getProperty("user.home"),
+                ".scheduler-chatbot", "schedules");
+        Files.createDirectories(scheduleDir);
 
-        Files.writeString(plansDir.resolve("plan_20250101_000000_1.json"),
+        Files.writeString(scheduleDir.resolve("schedule_20250101_000000_1.json"),
                 "{\"planName\":\"A\"}");
-        Files.writeString(plansDir.resolve("plan_20250102_000000_2.json"),
+        Files.writeString(scheduleDir.resolve("schedule_20250102_000000_2.json"),
                 "{\"planName\":\"B\"}");
 
-        List<ScheduleRepository.ScheduleFile> plans = repo.listPlans();
-        assertEquals(2, plans.size());
+        List<ScheduleRepository.ScheduleFile> schedules = repo.listSchedules();
+        assertEquals(2, schedules.size());
 
-        assertTrue(repo.deletePlan(plans.get(0).getPath()));
-        assertEquals(1, repo.listPlans().size());
+        assertTrue(repo.deleteSchedule(schedules.get(0).getPath()));
+        assertEquals(1, repo.listSchedules().size());
     }
 
     @Test
-    public void testSavePlanCreatesFile() throws Exception {
+    public void testSaveScheduleCreatesFile() throws Exception {
         ScheduleRepository repo = new ScheduleRepository();
 
-        PlanSpec plan = new PlanSpec();
-        plan.setPlanName("test-plan");
+        Schedule schedule = new Schedule();
+        schedule.setPlanName("test-plan");
 
-        String path = repo.savePlan(plan);
-        assertTrue(Files.exists(Path.of(path)));
+        String path = repo.saveSchedule(schedule);
+        assertTrue(Files.exists(Path.of(path)), "Saved schedule file should exist at returned path");
     }
 
     @Test
     public void testListSchedules() throws Exception {
+        //remove existing files so test is deterministic
+        Path schedulesDir = Path.of(System.getProperty("user.home"),
+                ".scheduler-chatbot", "schedules");
+        try (var stream = Files.list(schedulesDir)) {
+        stream.forEach(p -> {
+            try { Files.deleteIfExists(p); } catch (Exception ignored) {}
+        });
+    }
         ScheduleRepository repo = new ScheduleRepository();
 
         Schedule s1 = new Schedule();

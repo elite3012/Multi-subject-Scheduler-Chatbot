@@ -3,7 +3,6 @@ package com.scheduler.chatbot.persistence;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.scheduler.chatbot.model.PlanSpec;
 import com.scheduler.chatbot.model.Schedule;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 public class ScheduleRepository {
     
     private static final String DATA_DIR = System.getProperty("user.home") + "/.scheduler-chatbot";
-    private static final String PLANS_DIR = DATA_DIR + "/plans";
     private static final String SCHEDULES_DIR = DATA_DIR + "/schedules";
     
     private final ObjectMapper objectMapper;
@@ -44,24 +42,10 @@ public class ScheduleRepository {
     
     private void createDirectories() {
         try {
-            Files.createDirectories(Paths.get(PLANS_DIR));
             Files.createDirectories(Paths.get(SCHEDULES_DIR));
         } catch (IOException e) {
             throw new RuntimeException("Failed to create data directories", e);
         }
-    }
-    
-    /**
-     * Save a plan to JSON file
-     * Filename: plan_YYYYMMDD_HHmmss.json
-     */
-    public String savePlan(PlanSpec plan) throws IOException {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
-        String filename = "plan_" + timestamp + ".json";
-        Path filepath = Paths.get(PLANS_DIR, filename);
-        
-        objectMapper.writeValue(filepath.toFile(), plan);
-        return filepath.toString();
     }
     
     /**
@@ -78,24 +62,10 @@ public class ScheduleRepository {
     }
     
     /**
-     * Load a plan from file
-     */
-    public PlanSpec loadPlan(String filepath) throws IOException {
-        return objectMapper.readValue(new File(filepath), PlanSpec.class);
-    }
-    
-    /**
      * Load a schedule from file
      */
     public Schedule loadSchedule(String filepath) throws IOException {
         return objectMapper.readValue(new File(filepath), Schedule.class);
-    }
-    
-    /**
-     * List all saved plans (sorted by date, newest first)
-     */
-    public List<ScheduleFile> listPlans() throws IOException {
-        return listFiles(PLANS_DIR, "plan_");
     }
     
     /**
@@ -114,13 +84,6 @@ public class ScheduleRepository {
             return null;
         }
         return loadSchedule(schedules.get(0).getPath());
-    }
-    
-    /**
-     * Delete a plan file
-     */
-    public boolean deletePlan(String filepath) {
-        return new File(filepath).delete();
     }
     
     /**

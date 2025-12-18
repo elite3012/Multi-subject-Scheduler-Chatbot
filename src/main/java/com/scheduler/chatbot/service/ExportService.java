@@ -140,14 +140,14 @@ public class ExportService {
         StringBuilder sb = new StringBuilder();
         sb.append("Course: ").append(block.getCourseId());
         if (block.getComponentName() != null) {
-            sb.append("\\nComponent: ").append(block.getComponentName());
+            sb.append("\nComponent: ").append(block.getComponentName());
         }
-        sb.append("\\nPriority: ").append(priority(block.getPriority()));
+        sb.append("\nPriority: ").append(priority(block.getPriority()));
         if (block.getDeadline() != null) {
-            sb.append("\\nDeadline: ").append(block.getDeadline());
+            sb.append("\nDeadline: ").append(block.getDeadline());
         }
         if (block.getReason() != null) {
-            sb.append("\\nReason: ").append(block.getReason());
+            sb.append("\nReason: ").append(block.getReason());
         }
         return sb.toString();
     }

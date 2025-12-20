@@ -30,52 +30,11 @@ public class ScheduleRepositoryTest {
         }
     }
 
-<<<<<<< Updated upstream
-    @Test
-    public void testListAndDeleteSchedules() throws Exception {
-        ScheduleRepository repo = new ScheduleRepository();
-
-        Path scheduleDir = Path.of(System.getProperty("user.home"),
-                ".scheduler-chatbot", "schedules");
-        Files.createDirectories(scheduleDir);
-
-        Files.writeString(scheduleDir.resolve("schedule_20250101_000000_1.json"),
-                "{\"planName\":\"A\"}");
-        Files.writeString(scheduleDir.resolve("schedule_20250102_000000_2.json"),
-                "{\"planName\":\"B\"}");
-
-        List<ScheduleRepository.ScheduleFile> schedules = repo.listSchedules();
-        assertEquals(2, schedules.size());
-
-        assertTrue(repo.deleteSchedule(schedules.get(0).getPath()));
-        assertEquals(1, repo.listSchedules().size());
-    }
-
-    @Test
-    public void testSaveScheduleCreatesFile() throws Exception {
-        ScheduleRepository repo = new ScheduleRepository();
-
-        Schedule schedule = new Schedule();
-        schedule.setPlanName("test-plan");
-
-        String path = repo.saveSchedule(schedule);
-        assertTrue(Files.exists(Path.of(path)), "Saved schedule file should exist at returned path");
-    }
-=======
     // Tests for plan operations removed - plan persistence was removed from ScheduleRepository
     // Only schedule persistence is supported now
->>>>>>> Stashed changes
 
     @Test
     public void testListSchedules() throws Exception {
-        //remove existing files so test is deterministic
-        Path schedulesDir = Path.of(System.getProperty("user.home"),
-                ".scheduler-chatbot", "schedules");
-        try (var stream = Files.list(schedulesDir)) {
-        stream.forEach(p -> {
-            try { Files.deleteIfExists(p); } catch (Exception ignored) {}
-        });
-    }
         ScheduleRepository repo = new ScheduleRepository();
 
         Schedule s1 = new Schedule();

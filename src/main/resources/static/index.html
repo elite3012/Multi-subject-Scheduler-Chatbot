@@ -8,35 +8,88 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Hero Section with Parallax -->
-    <section class="hero parallax" id="hero">
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+        <span class="theme-icon">🌙</span>
+    </button>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
         <div class="hero-content">
-            <h1 class="fade-in">📚 Smart Study Scheduler</h1>
-            <p class="fade-in-delay">Plan your study schedule with AI-powered chatbot</p>
-            <a href="#chat" class="cta-button">Start Planning</a>
+            <h1 class="fade-in">Study Schedule Manager</h1>
+            <p class="fade-in-delay">Professional scheduling system for academic planning</p>
+            <a href="#chat" class="cta-button">Get Started</a>
         </div>
-        <div class="scroll-indicator">↓</div>
     </section>
 
-    <!-- Quick Guide Section -->
+    <!-- Detailed Usage Guide Section -->
     <section class="guide-section" id="guide">
         <div class="container">
-            <h2>How It Works</h2>
-            <div class="guide-grid">
-                <div class="guide-card" data-step="1">
-                    <div class="step-number">1</div>
-                    <h3>Add Subjects</h3>
-                    <code>add subject "Math" hours 10 priority HIGH</code>
+            <h2>Usage Guide</h2>
+            
+            <div class="guide-content">
+                <div class="guide-category">
+                    <h3>1. Managing Subjects</h3>
+                    <div class="guide-item">
+                        <h4>Add a Subject</h4>
+                        <code>add subject "[Name]" hours [Number] priority [HIGH|MEDIUM|LOW]</code>
+                        <p class="guide-desc">Example: <code>add subject "Mathematics" hours 15 priority HIGH</code></p>
+                        <p class="guide-note">Priority determines scheduling order. HIGH priority subjects get the best time slots.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>List All Subjects</h4>
+                        <code>list subjects</code>
+                        <p class="guide-desc">Shows all subjects with their hours and priorities.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>Remove a Subject</h4>
+                        <code>remove subject "[Name]"</code>
+                        <p class="guide-desc">Example: <code>remove subject "Mathematics"</code></p>
+                    </div>
                 </div>
-                <div class="guide-card" data-step="2">
-                    <div class="step-number">2</div>
-                    <h3>Set Availability</h3>
-                    <code>set availability on 2025-12-20 capacity 8 hours</code>
+
+                <div class="guide-category">
+                    <h3>2. Setting Availability</h3>
+                    <div class="guide-item">
+                        <h4>Add Available Day</h4>
+                        <code>set availability on [YYYY-MM-DD] capacity [Number] hours</code>
+                        <p class="guide-desc">Example: <code>set availability on 2025-12-25 capacity 8 hours</code></p>
+                        <p class="guide-note">Capacity is the maximum study hours available on that day.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>List Availability</h4>
+                        <code>list availability</code>
+                        <p class="guide-desc">Shows all dates and their study capacity.</p>
+                    </div>
                 </div>
-                <div class="guide-card" data-step="3">
-                    <div class="step-number">3</div>
-                    <h3>Generate Schedule</h3>
-                    <code>generate schedule</code>
+
+                <div class="guide-category">
+                    <h3>3. Schedule Generation</h3>
+                    <div class="guide-item">
+                        <h4>Generate Schedule</h4>
+                        <code>generate schedule</code>
+                        <p class="guide-desc">Creates optimized study schedule based on subjects and availability.</p>
+                        <p class="guide-note">Uses front-loading algorithm: distributes study hours across available days with higher allocation early on.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>View Schedule</h4>
+                        <code>show schedule</code>
+                        <p class="guide-desc">Displays the generated schedule with daily breakdown.</p>
+                    </div>
+                </div>
+
+                <div class="guide-category">
+                    <h3>4. Other Commands</h3>
+                    <div class="guide-item">
+                        <h4>Command History</h4>
+                        <code>show history</code>
+                        <p class="guide-desc">View all previously executed commands.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4>Clear All Data</h4>
+                        <code>clear all</code>
+                        <p class="guide-desc">Removes all subjects, availability, and schedule data.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -53,25 +106,25 @@
                     </div>
                     <div class="command-list">
                         <button class="quick-cmd" data-cmd='add subject "Math" hours 10 priority HIGH'>
-                            ➕ Add Subject
+                            Add Subject
                         </button>
                         <button class="quick-cmd" data-cmd="set availability on 2025-12-20 capacity 8 hours">
-                            📅 Set Availability
+                            Set Availability
                         </button>
                         <button class="quick-cmd" data-cmd="list subjects">
-                            📋 List Subjects
+                            List Subjects
                         </button>
                         <button class="quick-cmd" data-cmd="show history">
-                            🕐 Command History
+                            Command History
                         </button>
                         <button class="quick-cmd" data-cmd="generate schedule">
-                            ✨ Generate Schedule
+                            Generate Schedule
                         </button>
                         <button class="quick-cmd" data-cmd="show schedule">
-                            👁️ View Schedule
+                            View Schedule
                         </button>
                         <button class="quick-cmd" data-cmd="clear all">
-                            🗑️ Clear All
+                            Clear All
                         </button>
                     </div>
                     <div class="status-panel">
@@ -85,15 +138,15 @@
                 <!-- Chat Main -->
                 <main class="chat-main">
                     <div class="chat-header">
-                        <h2>Chat with Scheduler</h2>
-                        <button id="clearChat" class="icon-btn">🗑️</button>
+                        <h2>Schedule Assistant</h2>
+                        <button id="clearChat" class="icon-btn">Clear Chat</button>
                     </div>
                     
                     <div class="messages-container" id="messagesContainer">
                         <div class="message bot-message">
                             <div class="message-content">
-                                <p>👋 Hi! I'm your study scheduler assistant.</p>
-                                <p>Start by adding a subject or click a quick command →</p>
+                                <p>Welcome to the Study Schedule Manager.</p>
+                                <p>Begin by adding a subject or select a quick command from the sidebar.</p>
                             </div>
                         </div>
                     </div>
@@ -114,37 +167,8 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section parallax-light">
-        <div class="container">
-            <h2>Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Priority-Based</h3>
-                    <p>High priority subjects get scheduled first with optimal time slots</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Smart Algorithm</h3>
-                    <p>Front-loading algorithm ensures better retention and less cramming</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💾</div>
-                    <h3>Save & Load</h3>
-                    <p>Save your schedules and load them anytime</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
-                    <h3>Flexible</h3>
-                    <p>Update subjects, priorities, and availability on the fly</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <footer>
-        <p>Made with ❤️ by Team Q • © 2025</p>
+        <p>Team Q © 2025</p>
     </footer>
 
     <script src="js/app.js"></script>

@@ -44,11 +44,6 @@ public class SchedulerFacade {
      */
     public CommandResult executeCommand(String dslCommand) {
         try {
-<<<<<<< Updated upstream
-            // Step 1: Parse DSL → PlanSpec (contains only data from this command)
-            PlanSpec parsedPlan = dslParser.parseCommand(dslCommand);
-            
-=======
             System.out.println("=== EXECUTE COMMAND START ===");
             System.out.println("Command: " + dslCommand);
             
@@ -59,7 +54,6 @@ public class SchedulerFacade {
             System.out.println("Parsed courses: " + (parsedPlan.getCourses() != null ? parsedPlan.getCourses().size() : "null"));
             System.out.println("Parsed availability: " + (parsedPlan.getAvailability() != null ? parsedPlan.getAvailability().size() : "null"));
             
->>>>>>> Stashed changes
             // Step 1.5: Save command to history (except for SHOW_HISTORY itself)
             String commandType = parsedPlan.getCommandType();
             if (!"SHOW_HISTORY".equals(commandType)) {
@@ -73,16 +67,6 @@ public class SchedulerFacade {
             // Step 2: Initialize currentPlan if null
             if (this.currentPlan == null) {
                 this.currentPlan = new PlanSpec();
-<<<<<<< Updated upstream
-            }
-
-            // Step 3: Handle SHOW_HISTORY - return command history
-            if ("SHOW_HISTORY".equals(commandType)) {
-                return new CommandResult(true, "Command history retrieved", null, commandHistory);
-            }
-            
-            // Step 4: Merge parsed data into current plan based on command type
-=======
                 System.out.println("Initialized new currentPlan");
             }
             
@@ -121,36 +105,18 @@ public class SchedulerFacade {
             }
             
             // Step 7: Merge parsed data into current plan based on command type
->>>>>>> Stashed changes
             if ("ADD_SUBJECT".equals(commandType)) {
                 // Add all subjects from parsed plan
                 for (PlanSpec.CourseSpec course : parsedPlan.getCourses()) {
                     this.currentPlan.addCourse(course);
-<<<<<<< Updated upstream
-                }
-=======
                     System.out.println("Added course: " + course.getId() + ", hours: " + course.getWorkloadHours() + ", priority: " + course.getPriority());
                 }
                 System.out.println("AFTER add - currentPlan courses: " + this.currentPlan.getCourses().size());
                 return new CommandResult(true, "Subject added successfully", this.currentPlan, null);
->>>>>>> Stashed changes
             } else if ("SET_AVAILABILITY".equals(commandType)) {
                 // Add all availability from parsed plan
                 for (Map.Entry<LocalDate, Double> entry : parsedPlan.getAvailability().entrySet()) {
                     this.currentPlan.setAvailability(entry.getKey(), entry.getValue());
-<<<<<<< Updated upstream
-                }
-            } else if ("CLEAR".equals(commandType)) {
-                this.currentPlan = new PlanSpec();
-            } else {
-                // For other commands (generate, show, list, etc.), use the parsed plan
-                this.currentPlan = parsedPlan;
-            }
-
-            return new CommandResult(true, "Command executed successfully", null, null);
-        } catch (Exception e) {
-            return new CommandResult(false, "Error: " + e.getMessage(), null, null);
-=======
                     System.out.println("Set availability: " + entry.getKey() + " -> " + entry.getValue() + " hours");
                 }
                 System.out.println("AFTER set - currentPlan availability: " + this.currentPlan.getAvailability().size());
@@ -182,7 +148,6 @@ public class SchedulerFacade {
             return new CommandResult(false, "Error: " + e.getMessage(), this.currentPlan, null);
         } finally {
             System.out.println("=== EXECUTE COMMAND END ===\n");
->>>>>>> Stashed changes
         }
     }
 
@@ -230,8 +195,6 @@ public class SchedulerFacade {
         this.currentPlan = null;
         this.currentSchedule = null;
         this.commandHistory.clear();
-<<<<<<< Updated upstream
-=======
     }
     
     /**
@@ -239,7 +202,6 @@ public class SchedulerFacade {
      */
     public PlanSpec getCurrentPlan() {
         return this.currentPlan;
->>>>>>> Stashed changes
     }
 
     /**

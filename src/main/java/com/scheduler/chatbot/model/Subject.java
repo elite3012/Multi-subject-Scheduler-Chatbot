@@ -2,19 +2,26 @@ package com.scheduler.chatbot.model;
 
 /**
  * Represents a subject/course to be scheduled
- * TODO: Implement subject properties and methods
+ * Contains subject properties including estimated hours, priority, and remaining hours
  */
 public class Subject {
-    // TODO: Add fields (name, estimatedHours, priority, remainingHours)
     private String name;
     private double estimatedHours;
     private Priority priority;
     private double remainingHours;
 
-    // TODO: Add constructors
+    /**
+     * Default constructor
+     */
     public Subject() {
     }
 
+    /**
+     * Constructor with all fields
+     * @param name Subject name
+     * @param estimatedHours Estimated hours needed
+     * @param priority Priority level
+     */
     public Subject(String name, double estimatedHours, Priority priority) {
         this.name = name;
         this.estimatedHours = Math.max(0.0, estimatedHours);
@@ -22,7 +29,6 @@ public class Subject {
         this.remainingHours = this.estimatedHours;
     }
 
-    // TODO: Add getters/setters
     public String getName() {
         return name;
     }

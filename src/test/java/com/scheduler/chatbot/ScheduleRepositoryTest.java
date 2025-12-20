@@ -30,6 +30,7 @@ public class ScheduleRepositoryTest {
         }
     }
 
+<<<<<<< Updated upstream
     @Test
     public void testListAndDeleteSchedules() throws Exception {
         ScheduleRepository repo = new ScheduleRepository();
@@ -60,6 +61,10 @@ public class ScheduleRepositoryTest {
         String path = repo.saveSchedule(schedule);
         assertTrue(Files.exists(Path.of(path)), "Saved schedule file should exist at returned path");
     }
+=======
+    // Tests for plan operations removed - plan persistence was removed from ScheduleRepository
+    // Only schedule persistence is supported now
+>>>>>>> Stashed changes
 
     @Test
     public void testListSchedules() throws Exception {

@@ -1,5 +1,6 @@
 package com.scheduler.chatbot.controller;
 
+import com.scheduler.chatbot.model.PlanSpec;
 import com.scheduler.chatbot.persistence.ScheduleRepository;
 import com.scheduler.chatbot.service.SchedulerFacade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,8 @@ public class ChatbotController {
      * Execute a DSL command
      */
     @PostMapping("/command")
-    public CommandResponse executeCommand(@RequestBody CommandRequest request) {
-        SchedulerFacade.CommandResult result = schedulerFacade.executeCommand(request.getCommand());
-        return new CommandResponse(result.getMessage());
+    public SchedulerFacade.CommandResult executeCommand(@RequestBody CommandRequest request) {
+        return schedulerFacade.executeCommand(request.getCommand());
     }
 
     /**
@@ -34,6 +34,16 @@ public class ChatbotController {
     @GetMapping("/schedule")
     public String getSchedule() {
         return schedulerFacade.getScheduleSummary();
+    }
+    
+    /**
+     * Get current plan
+     */
+    @GetMapping("/plan")
+    public PlanSpec getCurrentPlan() {
+        PlanSpec plan = schedulerFacade.getCurrentPlan();
+        // Return empty PlanSpec if null to avoid JSON parsing errors
+        return plan != null ? plan : new PlanSpec();
     }
     
     /**
@@ -48,9 +58,8 @@ public class ChatbotController {
      * Load a specific schedule from file
      */
     @PostMapping("/schedules/load")
-    public CommandResponse loadSchedule(@RequestBody LoadScheduleRequest request) {
-        SchedulerFacade.LoadResult result = schedulerFacade.loadSchedule(request.getFilepath());
-        return new CommandResponse(result.getMessage());
+    public SchedulerFacade.LoadResult loadSchedule(@RequestBody LoadScheduleRequest request) {
+        return schedulerFacade.loadSchedule(request.getFilepath());
     }
 
     // DTOs
@@ -66,21 +75,7 @@ public class ChatbotController {
         }
     }
 
-    public static class CommandResponse {
-        private String result;
 
-        public CommandResponse(String result) {
-            this.result = result;
-        }
-
-        public String getResult() {
-            return result;
-        }
-
-        public void setResult(String result) {
-            this.result = result;
-        }
-    }
     
     public static class LoadScheduleRequest {
         private String filepath;

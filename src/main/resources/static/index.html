@@ -1,12 +1,151 @@
+<!-- filepath: src/main/resources/static/ui/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Subject Scheduler Chatbot</title>
+    <title>Study Scheduler - AI Chatbot</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Hero Section with Parallax -->
+    <section class="hero parallax" id="hero">
+        <div class="hero-content">
+            <h1 class="fade-in">📚 Smart Study Scheduler</h1>
+            <p class="fade-in-delay">Plan your study schedule with AI-powered chatbot</p>
+            <a href="#chat" class="cta-button">Start Planning</a>
+        </div>
+        <div class="scroll-indicator">↓</div>
+    </section>
+
+    <!-- Quick Guide Section -->
+    <section class="guide-section" id="guide">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="guide-grid">
+                <div class="guide-card" data-step="1">
+                    <div class="step-number">1</div>
+                    <h3>Add Subjects</h3>
+                    <code>add subject "Math" hours 10 priority HIGH</code>
+                </div>
+                <div class="guide-card" data-step="2">
+                    <div class="step-number">2</div>
+                    <h3>Set Availability</h3>
+                    <code>set availability on 2025-12-20 capacity 8 hours</code>
+                </div>
+                <div class="guide-card" data-step="3">
+                    <div class="step-number">3</div>
+                    <h3>Generate Schedule</h3>
+                    <code>generate schedule</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Interface Section -->
+    <section class="chat-section" id="chat">
+        <div class="container">
+            <div class="chat-wrapper">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <h3>Quick Commands</h3>
+                    </div>
+                    <div class="command-list">
+                        <button class="quick-cmd" data-cmd='add subject "Math" hours 10 priority HIGH'>
+                            ➕ Add Subject
+                        </button>
+                        <button class="quick-cmd" data-cmd="set availability on 2025-12-20 capacity 8 hours">
+                            📅 Set Availability
+                        </button>
+                        <button class="quick-cmd" data-cmd="list subjects">
+                            📋 List Subjects
+                        </button>
+                        <button class="quick-cmd" data-cmd="show history">
+                            🕐 Command History
+                        </button>
+                        <button class="quick-cmd" data-cmd="generate schedule">
+                            ✨ Generate Schedule
+                        </button>
+                        <button class="quick-cmd" data-cmd="show schedule">
+                            👁️ View Schedule
+                        </button>
+                        <button class="quick-cmd" data-cmd="clear all">
+                            🗑️ Clear All
+                        </button>
+                    </div>
+                    <div class="status-panel">
+                        <h4>Current Plan</h4>
+                        <div id="planStatus">
+                            <p class="empty-state">No subjects added yet</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Chat Main -->
+                <main class="chat-main">
+                    <div class="chat-header">
+                        <h2>Chat with Scheduler</h2>
+                        <button id="clearChat" class="icon-btn">🗑️</button>
+                    </div>
+                    
+                    <div class="messages-container" id="messagesContainer">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <p>👋 Hi! I'm your study scheduler assistant.</p>
+                                <p>Start by adding a subject or click a quick command →</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-container">
+                        <input 
+                            type="text" 
+                            id="commandInput" 
+                            placeholder='Try: add subject "Math" hours 10 priority HIGH'
+                            autocomplete="off"
+                        />
+                        <button id="sendBtn" class="send-btn">Send</button>
+                    </div>
+
+                    <div class="suggestions" id="suggestions"></div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section parallax-light">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Priority-Based</h3>
+                    <p>High priority subjects get scheduled first with optimal time slots</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Smart Algorithm</h3>
+                    <p>Front-loading algorithm ensures better retention and less cramming</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Save & Load</h3>
+                    <p>Save your schedules and load them anytime</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Flexible</h3>
+                    <p>Update subjects, priorities, and availability on the fly</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Made with ❤️ by Team Q • © 2025</p>
+    </footer>
 
     <script src="js/app.js"></script>
 </body>

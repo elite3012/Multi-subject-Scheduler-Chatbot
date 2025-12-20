@@ -8,19 +8,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Main Spring Boot Application
- * Web-based UI served from /static
+ * Web-based UI served from /static/ui
  */
 @SpringBootApplication
 public class SchedulerChatbotApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SchedulerChatbotApplication.class, args);
-        System.out.println("\n========================================");
-        System.out.println("🚀 Multi-Subject Scheduler Chatbot");
-        System.out.println("========================================");
-        System.out.println("📝 Web UI: http://localhost:8081");
-        System.out.println("🔌 API:    http://localhost:8081/api/chatbot");
-        System.out.println("========================================\n");
     }
 
     /**

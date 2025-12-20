@@ -81,14 +81,9 @@ public class DSLParser {
 
             PlanSpec planSpec = visitor.getPlanSpec();
 
-            // Validate the PlanSpec (only if it's a generate schedule command)
-            if ("GENERATE_SCHEDULE".equals(planSpec.getCommandType())) {
-                PlanSpec.ValidationResult validation = planSpec.validate();
-                if (!validation.isValid()) {
-                    throw new ValidationException("Validation errors:\n" +
-                            String.join("\n", validation.getErrors()));
-                }
-            }
+            // DON'T validate here - DSLParser only parses individual commands
+            // Validation happens in SchedulerFacade where we have the complete currentPlan
+            // The parsed planSpec here may be incomplete (e.g., just commandType for "generate schedule")
 
             return planSpec;
 

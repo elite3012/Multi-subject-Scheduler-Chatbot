@@ -360,7 +360,7 @@ public class SchedulerService {
     }
     
     /**
-     * Format schedule as human-readable string with tree structure
+     * Format schedule as human-readable string - simple and clean
      */
     public String formatSchedule(Schedule schedule) {
         if (schedule == null || schedule.getBlocks().isEmpty()) {
@@ -370,35 +370,28 @@ public class SchedulerService {
         StringBuilder sb = new StringBuilder();
         
         // Header
-        sb.append("╔════════════════════════════════════════════════════════════╗\n");
-        sb.append("║        📅 MULTI-SUBJECT STUDY SCHEDULE                     ║\n");
-        sb.append("╚════════════════════════════════════════════════════════════╝\n\n");
+        sb.append("STUDY SCHEDULE\n");
+        sb.append("=".repeat(60)).append("\n\n");
         
         sb.append("Plan: ").append(schedule.getPlanName()).append("\n");
-        sb.append("Generated: ").append(schedule.getGeneratedAt()).append("\n");
         sb.append("Period: ").append(schedule.getStartDate()).append(" to ")
           .append(schedule.getEndDate()).append("\n\n");
         
         // Score summary
         Schedule.ScheduleScore score = schedule.getScore();
-        Object totalBlocks = schedule.getMetadata("totalBlocks");
-        Object totalAvailableHours = schedule.getMetadata("totalAvailableHours");
         Object completionRate = schedule.getMetadata("completionRate");
         Object utilizationRate = schedule.getMetadata("utilizationRate");
         
-        sb.append("╭─ SCHEDULE SCORE ─────────────────────────────────────╮\n");
-        sb.append("│ Overall Score:    ").append(String.format("%.1f", score.getOverallScore())).append("/100\n");
-        sb.append("│ Completion Rate:  ").append(String.format("%.1f", 
+        sb.append("SCHEDULE SCORE\n");
+        sb.append("-".repeat(60)).append("\n");
+        sb.append("Overall Score: ").append(String.format("%.1f", score.getOverallScore())).append("/100\n");
+        sb.append("Completion: ").append(String.format("%.1f", 
                 completionRate != null ? ((Double)completionRate) * 100 : 0.0)).append("%\n");
-        sb.append("│ Utilization:      ").append(String.format("%.1f", 
-                utilizationRate != null ? ((Double)utilizationRate) * 100 : 0.0)).append("%\n");
-        sb.append("│ Total Blocks:     ").append(totalBlocks != null ? totalBlocks : 0).append("\n");
-        sb.append("│ Total Hours:      ").append(String.format("%.1f", score.getTotalScheduledHours())).append("h / ")
-          .append(String.format("%.1f", totalAvailableHours != null ? (Double)totalAvailableHours : 0.0)).append("h\n");
-        sb.append("╰──────────────────────────────────────────────────────╯\n\n");
+        sb.append("Total Hours: ").append(String.format("%.1f", score.getTotalScheduledHours())).append("h\n\n");
         
         // Blocks grouped by date
-        sb.append("╭─ DAILY SCHEDULE ─────────────────────────────────────╮\n");
+        sb.append("DAILY SCHEDULE\n");
+        sb.append("-".repeat(60)).append("\n\n");
         
         Map<LocalDate, List<Schedule.ScheduledBlock>> blocksByDate = schedule.getBlocks().stream()
                 .collect(Collectors.groupingBy(Schedule.ScheduledBlock::getDate, TreeMap::new,
@@ -409,29 +402,25 @@ public class SchedulerService {
             
             double dayTotal = blocks.stream().mapToDouble(Schedule.ScheduledBlock::getDurationHours).sum();
             
-            sb.append("│\n");
-            sb.append("├─ ").append(date).append(" (").append(String.format("%.1f", dayTotal)).append("h)\n");
+            sb.append(date).append(" (").append(String.format("%.1f", dayTotal)).append("h):\n");
             
-            for (int i = 0; i < blocks.size(); i++) {
-                Schedule.ScheduledBlock block = blocks.get(i);
-                boolean isLast = (i == blocks.size() - 1);
-                String prefix = isLast ? "   └─" : "   ├─";
+            for (Schedule.ScheduledBlock block : blocks) {
+                String priorityLabel = block.getPriority().toString();
                 
-                String priorityIcon = getPriorityIcon(block.getPriority());
-                
-                sb.append(prefix).append(" ")
+                sb.append("  ")
                   .append(block.getStartTime()).append("-").append(block.getEndTime())
-                  .append(" │ ").append(priorityIcon).append(" ")
+                  .append(" - ")
                   .append(block.getCourseName())
-                  .append(" (").append(String.format("%.1f", block.getDurationHours())).append("h)")
+                  .append(" (").append(priorityLabel).append(", ")
+                  .append(String.format("%.1f", block.getDurationHours())).append("h)")
                   .append("\n");
             }
+            sb.append("\n");
         });
         
-        sb.append("╰──────────────────────────────────────────────────────╯\n\n");
-        
         // Subject summary
-        sb.append("╭─ SUBJECT SUMMARY ────────────────────────────────────╮\n");
+        sb.append("SUBJECT SUMMARY\n");
+        sb.append("-".repeat(60)).append("\n");
         
         Map<String, List<Schedule.ScheduledBlock>> blocksByCourse = schedule.getBlocks().stream()
                 .collect(Collectors.groupingBy(Schedule.ScheduledBlock::getCourseId));
@@ -439,27 +428,14 @@ public class SchedulerService {
         blocksByCourse.forEach((courseId, blocks) -> {
             double totalHours = blocks.stream().mapToDouble(Schedule.ScheduledBlock::getDurationHours).sum();
             Priority priority = blocks.get(0).getPriority();
-            String icon = getPriorityIcon(priority);
             
-            sb.append("│ ").append(icon).append(" ").append(courseId)
+            sb.append(courseId)
               .append(": ").append(blocks.size()).append(" blocks, ")
               .append(String.format("%.1f", totalHours)).append(" hours")
               .append(" (").append(priority).append(")\n");
         });
         
-        sb.append("╰──────────────────────────────────────────────────────╯\n");
-        
         return sb.toString();
     }
-    
-    /**
-     * Get icon for priority level
-     */
-    private String getPriorityIcon(Priority priority) {
-        return switch (priority) {
-            case HIGH -> "🔴";
-            case MEDIUM -> "🟡";
-            case LOW -> "🟢";
-        };
-    }
+
 }
